@@ -1,5 +1,5 @@
 {
-  "name": "react-native-viewpager",
+  "name": "react-native-flipviewpager",
   "version": "0.2.1",
   "description": "ViewPager componnent for React Native",
   "main": "ViewPager.js",
