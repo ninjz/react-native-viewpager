@@ -16,7 +16,7 @@ var StaticRenderer = require('react-native/Libraries/Components/StaticRenderer')
 var TimerMixin = require('react-timer-mixin');
 
 var DefaultViewPageIndicator = require('./DefaultViewPageIndicator');
-var deviceWidth = Dimensions.get('window').width;
+var deviceHeight = Dimensions.get('window').height;
 var ViewPagerDataSource = require('./ViewPagerDataSource');
 
 var ViewPager = React.createClass({
@@ -61,7 +61,7 @@ var ViewPager = React.createClass({
   getInitialState() {
     return {
       currentPage: 0,
-      viewWidth: 0,
+      viewHeight: 0,
       scrollValue: new Animated.Value(0)
     };
   },
@@ -70,14 +70,14 @@ var ViewPager = React.createClass({
     this.childIndex = 0;
 
     var release = (e, gestureState) => {
-      var relativeGestureDistance = gestureState.dx / deviceWidth,
+      var relativeGestureDistance = gestureState.dy / deviceHeight,
           //lastPageIndex = this.props.children.length - 1,
-          vx = gestureState.vx;
+          vy = gestureState.vy;
 
       var step = 0;
-      if (relativeGestureDistance < -0.5 || (relativeGestureDistance < 0 && vx <= 0.5)) {
+      if (relativeGestureDistance < -0.5 || (relativeGestureDistance < 0 && vy <= 0.5)) {
         step = 1;
-      } else if (relativeGestureDistance > 0.5 || (relativeGestureDistance > 0 && vx >= 0.5)) {
+      } else if (relativeGestureDistance > 0.5 || (relativeGestureDistance > 0 && vy >= 0.5)) {
         step = -1;
       }
 
@@ -89,7 +89,7 @@ var ViewPager = React.createClass({
     this._panResponder = PanResponder.create({
       // Claim responder if it's a horizontal pan
       onMoveShouldSetPanResponder: (e, gestureState) => {
-        if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+        if (Math.abs(gestureState.dy) > Math.abs(gestureState.dx)) {
           if (/* (gestureState.moveX <= this.props.edgeHitWidth ||
               gestureState.moveX >= deviceWidth - this.props.edgeHitWidth) && */
                 this.props.locked !== true && !this.fling) {
@@ -105,9 +105,9 @@ var ViewPager = React.createClass({
 
       // Dragging, move the view with the touch
       onPanResponderMove: (e, gestureState) => {
-        var dx = gestureState.dx;
-        var offsetX = -dx / this.state.viewWidth + this.childIndex;
-        this.state.scrollValue.setValue(offsetX);
+        var dy = gestureState.dy;
+        var offsetY = -dy / this.state.viewHeight + this.childIndex;
+        this.state.scrollValue.setValue(offsetY);
       },
     });
 
@@ -247,9 +247,9 @@ var ViewPager = React.createClass({
 
     var pagesNum = 0;
     var hasLeft = false;
-    var viewWidth = this.state.viewWidth;
+    var viewHeight = this.state.viewHeight;
 
-    if(pageIDs.length > 0 && viewWidth > 0) {
+    if(pageIDs.length > 0 && viewHeight > 0) {
       // left page
       if (this.state.currentPage > 0) {
         bodyComponents.push(this._getPage(this.state.currentPage - 1));
@@ -276,33 +276,33 @@ var ViewPager = React.createClass({
     }
 
     var sceneContainerStyle = {
-      width: viewWidth * pagesNum,
+      height : viewHeight * pagesNum,
       flex: 1,
-      flexDirection: 'row'
+      flexDirection: 'column'
     };
 
     // this.childIndex = hasLeft ? 1 : 0;
     // this.state.scrollValue.setValue(this.childIndex);
-    var translateX = this.state.scrollValue.interpolate({
-      inputRange: [0, 1], outputRange: [0, -viewWidth]
+    var translateY = this.state.scrollValue.interpolate({
+      inputRange: [0, 1], outputRange: [0, -viewHeight + 43]
     });
 
     return (
       <View style={{flex: 1}}
         onLayout={(event) => {
             // console.log('ViewPager.onLayout()');
-            var viewWidth = event.nativeEvent.layout.width;
-            if (!viewWidth || this.state.viewWidth === viewWidth) {
+            var viewHeight = event.nativeEvent.layout.height;
+            if (!viewHeight || this.state.viewHeight === viewHeight) {
               return;
             }
             this.setState({
               currentPage: this.state.currentPage,
-              viewWidth: viewWidth,
+              viewHeight: viewHeight,
             });
           }}
         >
 
-        <Animated.View style={[sceneContainerStyle, {transform: [{translateX}]}]}
+        <Animated.View style={[sceneContainerStyle, {transform: [{translateY}]}]}
           {...this._panResponder.panHandlers}>
           {bodyComponents}
         </Animated.View>
